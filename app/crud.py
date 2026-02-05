@@ -1,10 +1,13 @@
 from sqlalchemy.orm import Session
-import models, schemas
+import app.models, app.schemas
+schemas = app.schemas
+models = app.models
+from app.core.security import hash_password, verify_password, create_access_token
 
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(
-        name=user.name,
-        email=user.email
+        email=user.email,
+        hashed_password=hash_password(user.password)
     )
     db.add(db_user)
     db.commit()
@@ -22,7 +25,6 @@ def update_user(db: Session, user_id: int, user: schemas.UserCreate):
     if not db_user:
         return None
 
-    db_user.name = user.name
     db_user.email = user.email
     db.commit()
     db.refresh(db_user)
